@@ -161,3 +161,8 @@ cython_debug/
 
 .ruff_cache/
 *.zip
+
+
+# 别push数据和ipynb的文件，否则会很大
+data/
+*.ipynb
