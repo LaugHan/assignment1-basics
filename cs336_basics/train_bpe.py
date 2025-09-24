@@ -25,26 +25,37 @@ def init_vocab(special_tokens:list[str])->dict[int, bytes]:
     return vocab
 
 
-def train_bpe(input_path:str, vocab_size:int, special_tokens:list[str]) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
+def get_pretoken_count_num(content:str, special_tokens:list[str]) -> dict[str, int]:
+    pretoken_count_num = dict()
     
-    with open(input_path, 'r', encoding = 'utf-8') as f:
-        content = f.read()
-
+    if not special_tokens:
+        for pretoken in re.finditer(PAT, content):
+            pretoken_content = pretoken.group()
+            pretoken_count_num[pretoken_content] = pretoken_count_num.get(pretoken_content, 0) + 1
+        return pretoken_count_num
+    
     # 单独拿掉特殊词，然后得到所有pretokens的迭代器
     escaped_tokens = [re.escape(token) for token in special_tokens]
     delimiter = '(' + '|'.join(escaped_tokens) + ')'
     content_parts = re.split(delimiter, content)
-    
-    pretoken_count_num = dict()
+
+    # 统计各个pretoken的个数
 
     for part in content_parts:
         if part in special_tokens:
             continue
         pre_tokens = re.finditer(PAT, part)
         for pretoken in pre_tokens:
-                pretoken_content = pretoken.group()
-                pretoken_count_num[pretoken_content] = pretoken_count_num.get(pretoken_content, 0) + 1
-    # 统计各个pretoken的个数
+            pretoken_content = pretoken.group()
+            pretoken_count_num[pretoken_content] = pretoken_count_num.get(pretoken_content, 0) + 1
+    return pretoken_count_num
+
+def train_bpe(input_path:str, vocab_size:int, special_tokens:list[str]) -> tuple[dict[int, bytes], list[tuple[bytes, bytes]]]:
+    
+    with open(input_path, 'r', encoding = 'utf-8') as f:
+        content = f.read()
+
+    pretoken_count_num = get_pretoken_count_num(content, special_tokens)
 
     # 初始化字典，字典中目前存放的是256个初始字节对应的字符，以及特殊字符。
     # 拿到下一次字典更新时放的索引
@@ -121,7 +132,7 @@ def save_vocab_or_merges(file, filepath:str):
 
 
 def main():
-    input_path = '/Users/lixiaohan/develop_vscode/assignment1-basics/data/TinyStoriesV2-GPT4-valid.txt'
+    input_path = '../data/TinyStoriesV2-GPT4-valid.txt'
     vocab_size = 1000
     special_tokens = ['<|endoftext|>']
 
@@ -132,5 +143,5 @@ def main():
     save_vocab_or_merges(vocab, vocab_save_path)
     save_vocab_or_merges(merges, merges_save_path)
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
