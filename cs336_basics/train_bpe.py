@@ -24,14 +24,37 @@ def init_vocab(special_tokens:list[str])->dict[int, bytes]:
         vocab[256+i] = special_tokens[i].encode('utf-8')
     return vocab
 
+def get_pretokens_list(content:str, special_tokens:list[str]) -> list[str]:
+    pretokens_list = []
+    
+    if not special_tokens:
+        for pretoken in re.finditer(PAT, content):
+            pretoken_content = pretoken.group()
+            pretokens_list.append(pretoken_content)
+        return pretokens_list
+    
+    # 单独拿掉特殊词，然后得到所有pretokens的迭代器
+    escaped_tokens = [re.escape(token) for token in special_tokens]
+    delimiter = '(' + '|'.join(escaped_tokens) + ')'
+    content_parts = re.split(delimiter, content)
+
+    for part in content_parts:
+        if part in special_tokens:
+            continue
+        pre_tokens = re.finditer(PAT, part)
+        for pretoken in pre_tokens:
+            pretoken_content = pretoken.group()
+            pretokens_list.append(pretoken_content)
+    return pretokens_list
 
 def get_pretoken_count_num(content:str, special_tokens:list[str]) -> dict[str, int]:
-    pretoken_count_num = dict()
+    pretoken_count_num = {}
     
     if not special_tokens:
         for pretoken in re.finditer(PAT, content):
             pretoken_content = pretoken.group()
             pretoken_count_num[pretoken_content] = pretoken_count_num.get(pretoken_content, 0) + 1
+
         return pretoken_count_num
     
     # 单独拿掉特殊词，然后得到所有pretokens的迭代器
