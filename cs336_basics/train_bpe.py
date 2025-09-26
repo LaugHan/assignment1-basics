@@ -24,15 +24,16 @@ def init_vocab(special_tokens:list[str])->dict[int, bytes]:
         vocab[256+i] = special_tokens[i].encode('utf-8')
     return vocab
 
-def get_pretokens_list(content:str, special_tokens:list[str]) -> list[str]:
+def get_pretokens_list(content:str, special_tokens:list[str]|None) -> list[str]:
     pretokens_list = []
     
-    if not special_tokens:
+    if special_tokens is None:
         for pretoken in re.finditer(PAT, content):
             pretoken_content = pretoken.group()
             pretokens_list.append(pretoken_content)
         return pretokens_list
     
+    special_tokens = sorted(special_tokens, key=len, reverse=True) # 按照长度大在前来排序，否则出现重合会先匹配第一个，不确定是匹配的子集还是父集
     # 单独拿掉特殊词，然后得到所有pretokens的迭代器
     escaped_tokens = [re.escape(token) for token in special_tokens]
     delimiter = '(' + '|'.join(escaped_tokens) + ')'
@@ -40,6 +41,7 @@ def get_pretokens_list(content:str, special_tokens:list[str]) -> list[str]:
 
     for part in content_parts:
         if part in special_tokens:
+            pretokens_list.append(part)
             continue
         pre_tokens = re.finditer(PAT, part)
         for pretoken in pre_tokens:
