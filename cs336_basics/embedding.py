@@ -9,10 +9,6 @@ class Embedding(nn.Module):
         weights = nn.init.trunc_normal_(init_weights, mean = 0, std = 1, a = 3, b = 3)
 
         self.weights = nn.Parameter(weights)
-        self.vocab_size = vocab_size
-        self.d_model = d_model
-        self.device = device
-        self.dtype = dtype
 
     def forward(self, token_ids:torch.Tensor) -> torch.Tensor:
         embedded_tokens = self.weights[token_ids]

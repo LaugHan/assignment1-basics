@@ -10,7 +10,15 @@ import torch
 from jaxtyping import Bool, Float, Int
 from torch import Tensor
 
+other_dir = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "cs336_basics"  # 目标文件夹名称
+)
 
+# 将该路径添加到 Python 模块搜索路径
+sys.path.append(other_dir)
+
+from cs336_basics.linear import Linear
 def run_linear(
     d_in: int,
     d_out: int,
@@ -29,10 +37,12 @@ def run_linear(
     Returns:
         Float[Tensor, "... d_out"]: The transformed output of your linear module.
     """
+    linear_model = Linear(d_in, d_out)
+    param_dict = {'weights':weights}
+    linear_model.load_state_dict(param_dict)
+    return linear_model(in_features)
 
-    raise NotImplementedError
-
-
+from cs336_basics.embedding import Embedding
 def run_embedding(
     vocab_size: int,
     d_model: int,
@@ -52,9 +62,13 @@ def run_embedding(
         Float[Tensor, "... d_model"]: Batch of embeddings returned by your Embedding layer.
     """
 
-    raise NotImplementedError
+    embedding_model = Embedding(vocab_size, d_model)
+    param_dict = {'weights':weights}
+    embedding_model.load_state_dict(param_dict)
 
+    return embedding_model(token_ids)
 
+from cs336_basics.swiglu import SwiGLU
 def run_swiglu(
     d_model: int,
     d_ff: int,
@@ -84,7 +98,10 @@ def run_swiglu(
     # swiglu.w1.weight.data = w1_weight
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
-    raise NotImplementedError
+    ffn = SwiGLU(d_model, d_ff)
+    param_dict = {"W1":w1_weight, "W2":w2_weight, "W3":w3_weight}
+    ffn.load_state_dict(param_dict)
+    return ffn(in_features)
 
 
 def run_scaled_dot_product_attention(
@@ -358,7 +375,7 @@ def run_transformer_lm(
     """
     raise NotImplementedError
 
-
+from cs336_basics.rmsnorm import RMSNorm
 def run_rmsnorm(
     d_model: int,
     eps: float,
@@ -379,7 +396,12 @@ def run_rmsnorm(
         Float[Tensor,"... d_model"]: Tensor of with the same shape as `in_features` with the output of running
         RMSNorm of the `in_features`.
     """
-    raise NotImplementedError
+    rmsnorm_model = RMSNorm(d_model, eps)
+
+    param_dict = {'weights':weights}
+
+    rmsnorm_model.load_state_dict(param_dict)
+    return rmsnorm_model(in_features)
 
 
 def run_silu(in_features: Float[Tensor, " ..."]) -> Float[Tensor, " ..."]:
@@ -539,6 +561,7 @@ def run_load_checkpoint(
     """
     raise NotImplementedError
 
+from tokenizer import Tokenizer
 
 def get_tokenizer(
     vocab: dict[int, bytes],
@@ -560,15 +583,9 @@ def get_tokenizer(
     Returns:
         A BPE tokenizer that uses the provided vocab, merges, and special tokens.
     """
-    raise NotImplementedError
+    return Tokenizer(vocab, merges, special_tokens)
 
-other_dir = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "cs336_basics"  # 目标文件夹名称
-)
 
-# 将该路径添加到 Python 模块搜索路径
-sys.path.append(other_dir)
 
 from train_bpe import train_bpe
 

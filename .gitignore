@@ -166,3 +166,6 @@ cython_debug/
 # 别push数据和ipynb的文件，否则会很大
 data/
 *.ipynb
+
+# 不跟踪二进制文件，不然比较大
+*.pkl

@@ -12,10 +12,6 @@ class Linear(nn.Module):
         sigma = math.sqrt(sigma_square)
         weights = nn.init.trunc_normal_(init_weights, mean = 0, std = sigma, a = -3*sigma, b = 3*sigma)
 
-        self.in_features = in_features
-        self.out_features = out_features
-        self.device = device
-        self.dtype = dtype
         self.weights = nn.Parameter(weights)
 
     def forward(self, x:torch.Tensor) -> torch.Tensor:
